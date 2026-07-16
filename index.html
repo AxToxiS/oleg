@@ -123,7 +123,7 @@
     (function moveHead(){ rot+=(tx*9-rot)*.045; shift+=(tx*8-shift)*.045; tilt+=(ty*2.5-tilt)*.045; head.setAttribute('transform',`translate(${shift.toFixed(2)} 0) rotate(${rot.toFixed(2)} 300 300) rotate(${tilt.toFixed(2)} 300 150)`); requestAnimationFrame(moveHead); })();
     const input=document.getElementById('pass'), cells=document.getElementById('cells'), timer=document.getElementById('timer');
     function render(value=''){ cells.innerHTML=''; for(let i=0;i<4;i++){ const cell=document.createElement('div'); cell.className='cell'; cell.innerHTML=`<span>${i<value.length?'*':''}</span>`; cells.append(cell); } }
-    render(); document.addEventListener('click',()=>input.focus()); addEventListener('load',()=>input.focus()); input.addEventListener('input',()=>render(input.value));
+    render(); document.addEventListener('click',()=>input.focus()); addEventListener('load',()=>input.focus()); input.addEventListener('input',()=>{ render(input.value); if(input.value==='boss') showBirthday(); });
     input.addEventListener('keydown', e => { if(e.key!=='Enter') return; if(input.value==='boss') showBirthday(); else { timer.classList.remove('error'); void timer.offsetWidth; timer.classList.add('error'); input.value=''; render(); } });
     const treasureChest=document.getElementById('treasureChest');
     let chestTwitchTimer, chestAnimationTimer;
