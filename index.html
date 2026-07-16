@@ -59,7 +59,7 @@
     html.unlocked, body.unlocked { overflow-y:auto; background:var(--paper); }
     body.unlocked #birthday { position:relative; inset:auto; display:block; overflow:visible; min-height:0; }
     .wealth-stage { position:relative; display:grid; width:100%; aspect-ratio:1419 / 1108; overflow:hidden; background:var(--paper); }
-    .wealth-scene { position:absolute; inset:0; width:100%; height:100%; overflow:hidden; background:var(--paper) url("третий слайд/3%20slide.png") center/100% 100% no-repeat; }
+    .wealth-scene { position:absolute; inset:0; width:100%; height:100%; overflow:hidden; background:var(--paper) url("assets/wealth-scene.png") center/100% 100% no-repeat; }
     .video-player { position:absolute; z-index:2; left:33.15%; top:35.3%; width:36.35%; aspect-ratio:520 / 330; overflow:hidden; border-radius:2.2%; background:transparent; }
     .video-player video { width:100%; height:100%; object-fit:cover; opacity:0; transition:opacity .35s ease; }
     .video-player.playing video { opacity:1; }
@@ -111,7 +111,7 @@
     <section class="wealth-stage" aria-label="Третий слайд">
       <div class="wealth-scene">
         <div class="video-player" id="videoPlayer">
-          <video id="wealthVideo" preload="metadata" playsinline><source src="третий%20слайд/7ac5e7a4ac5f4282b0bc9770807c77af.mp4" type="video/mp4"></video>
+          <video id="wealthVideo" preload="metadata" playsinline><source src="assets/wealth-video.mp4" type="video/mp4"></video>
           <button class="play-video" id="playVideo" type="button" aria-label="Воспроизвести видео"></button>
         </div>
       </div>
