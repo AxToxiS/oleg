@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ENTRY</title>
+<style>
+  /* ============================================================
+     PAGE 1 — "THE DOORMAN"
+     Strict grayscale. Cinematic. Quiet luxury.
+     ============================================================ */
+
+  :root{
+    --ink-0:#050505;      /* deep black background        */
+    --ink-1:#0e0e0e;      /* bezel / panel                */
+    --ink-2:#1c1c1c;      /* suit shadow                  */
+    --gray-3:#3a3a3a;     /* suit mid                     */
+    --gray-5:#8a8a8a;     /* skin shadow / captions       */
+    --gray-7:#c9c9c9;     /* skin light                   */
+    --led:#f4f4f4;        /* timer glyphs (white LED)     */
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+
+  html,body{
+    height:100%;
+    background:var(--ink-0);
+    overflow:hidden;
+    font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing:antialiased;
+    filter:grayscale(1);            /* hard guarantee: nothing escapes grayscale */
+    cursor:crosshair;
+  }
+
+  /* --- cinematic atmosphere: spotlight, vignette, film grain --- */
+
+  .stage{
+    position:fixed; inset:0;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:flex-end;
+  }
+
+  .spotlight{
+    position:absolute; inset:0;
+    background:radial-gradient(ellipse 55% 70% at 50% 62%,
+               rgba(255,255,255,.10) 0%,
+               rgba(255,255,255,.035) 40%,
+               transparent 72%);
+    pointer-events:none;
+  }
+
+  .vignette{
+    position:absolute; inset:0;
+    background:radial-gradient(ellipse 120% 110% at 50% 45%,
+               transparent 55%, rgba(0,0,0,.85) 100%);
+    pointer-events:none;
+  }
+
+  .grain{
+    position:absolute; inset:-100px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+    opacity:.055;
+    pointer-events:none;
+    animation:grain 900ms steps(4) infinite;
+  }
+  @keyframes grain{
+    0%{transform:translate(0,0)} 25%{transform:translate(-30px,20px)}
+    50%{transform:translate(25px,-15px)} 75%{transform:translate(-15px,-25px)}
+    100%{transform:translate(0,0)}
+  }
+
+  /* --- the guard --- */
+
+  .guard-wrap{
+    position:relative;
+    width:min(560px, 92vw);
+    line-height:0;
+    z-index:2;
+    /* waist-level crop: bottom of SVG = bottom of screen */
+  }
+
+  #guard{ width:100%; height:auto; display:block; }
+
+  /* head group is driven by JS (lerp), no CSS transition needed,
+     but a fallback transition keeps it smooth if rAF hiccups */
+  #headGroup{ will-change:transform; }
+
+  /* --- bomb-timer input, floating over the guard's chest --- */
+
+  .console{
+    position:fixed;
+    left:50%; top:78%;
+    transform:translate(-50%,-50%);
+    z-index:5;
+    text-align:center;
+    user-select:none;
+  }
+
+  .console .label{
+    color:var(--gray-5);
+    font-size:10px;
+    letter-spacing:.6em;
+    text-indent:.6em;      /* optically center the tracked text */
+    margin-bottom:14px;
+    text-transform:uppercase;
+  }
+
+  .timer{
+    display:inline-flex;
+    align-items:center;
+    gap:14px;
+    background:linear-gradient(180deg,#101010,#060606);
+    border:1px solid #2a2a2a;
+    border-radius:6px;
+    padding:16px 26px;
+    box-shadow:
+      inset 0 2px 10px rgba(0,0,0,.9),
+      0 0 0 4px #0b0b0b,
+      0 0 0 5px #222,
+      0 18px 50px rgba(0,0,0,.8);
+    cursor:text;
+  }
+
+  .timer .cells{
+    display:flex; gap:12px; min-width:150px; justify-content:center;
+  }
+
+  .cell{
+    width:22px; height:34px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:"Courier New", monospace;
+    font-size:30px; font-weight:700;
+    color:var(--led);
+    text-shadow:0 0 6px rgba(255,255,255,.9), 0 0 18px rgba(255,255,255,.35);
+    position:relative;
+  }
+  /* ghost segments behind each cell — unlit LED look */
+  .cell::before{
+    content:"8";
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    color:rgba(255,255,255,.06);
+    text-shadow:none;
+  }
+  .cell span{ position:relative; }
+
+  .colon{
+    color:var(--led);
+    font-family:"Courier New", monospace;
+    font-size:26px; font-weight:700;
+    text-shadow:0 0 6px rgba(255,255,255,.8);
+    animation:blink 1s steps(1) infinite;
+  }
+  @keyframes blink{ 50%{ opacity:.15; } }
+
+  /* hidden real input — keeps focus & mobile keyboards working */
+  #pass{
+    position:absolute; opacity:0; pointer-events:none;
+    width:1px; height:1px;
+  }
+
+  .hint{
+    margin-top:14px;
+    color:#4a4a4a;
+    font-size:10px;
+    letter-spacing:.35em;
+    text-indent:.35em;
+    text-transform:uppercase;
+  }
+
+  /* --- states --- */
+
+  .timer.error{ animation:shake .45s ease; border-color:#5a5a5a; }
+  @keyframes shake{
+    0%,100%{transform:translateX(0)}
+    20%{transform:translateX(-8px)} 40%{transform:translateX(8px)}
+    60%{transform:translateX(-5px)} 80%{transform:translateX(5px)}
+  }
+  .timer.error .cell{ animation:flash .45s ease; }
+  @keyframes flash{ 0%,100%{opacity:1} 50%{opacity:.25} }
+
+  /* --- success: placeholder for tunnel.md transition --- */
+  .blackout{
+    position:fixed; inset:0; z-index:50;
+    background:#000;
+    opacity:0; pointer-events:none;
+    transition:opacity 1.2s ease;
+  }
+  body.granted .blackout{ opacity:1; pointer-events:all; }
+  body.granted .stage{ transition:transform 1.4s cubic-bezier(.6,0,.3,1), filter 1.4s ease;
+                       transform:scale(1.18); filter:blur(6px); }
+
+  @media (prefers-reduced-motion: reduce){
+    .grain, .colon{ animation:none; }
+    body.granted .stage{ transition:none; transform:none; filter:none; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="stage">
+    <div class="spotlight"></div>
+
+    <!-- ================= THE GUARD (SVG, waist-up) ================= -->
+    <div class="guard-wrap" aria-hidden="true">
+      <svg id="guard" viewBox="0 0 600 640" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="suit" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#262626"/>
+            <stop offset="1" stop-color="#0d0d0d"/>
+          </linearGradient>
+          <linearGradient id="lapel" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#1a1a1a"/>
+            <stop offset="1" stop-color="#050505"/>
+          </linearGradient>
+          <radialGradient id="skin" cx="0.42" cy="0.32" r="0.9">
+            <stop offset="0" stop-color="#d6d6d6"/>
+            <stop offset="0.6" stop-color="#a8a8a8"/>
+            <stop offset="1" stop-color="#6f6f6f"/>
+          </radialGradient>
+          <radialGradient id="skinHand" cx="0.4" cy="0.3" r="1">
+            <stop offset="0" stop-color="#bdbdbd"/>
+            <stop offset="1" stop-color="#7a7a7a"/>
+          </radialGradient>
+          <linearGradient id="shirt" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#e8e8e8"/>
+            <stop offset="1" stop-color="#9c9c9c"/>
+          </linearGradient>
+        </defs>
+
+        <!-- ===== torso (static) ===== -->
+        <g id="torso">
+          <!-- shoulders / jacket -->
+          <path d="M110,640 L110,470
+                   C110,360 170,300 232,286
+                   L368,286
+                   C430,300 490,360 490,470
+                   L490,640 Z" fill="url(#suit)"/>
+          <!-- shoulder highlights -->
+          <path d="M118,470 C118,372 172,314 236,296 L246,306
+                   C186,324 132,378 130,470 L130,640 L118,640 Z"
+                fill="#333" opacity="0.5"/>
+          <path d="M482,470 C482,372 428,314 364,296 L354,306
+                   C414,324 468,378 470,470 L470,640 L482,640 Z"
+                fill="#000" opacity="0.55"/>
+
+          <!-- shirt V -->
+          <path d="M245,292 L300,382 L355,292 L340,288 L260,288 Z" fill="url(#shirt)"/>
+          <!-- collar -->
+          <path d="M258,288 L300,336 L282,288 Z" fill="#f0f0f0"/>
+          <path d="M342,288 L300,336 L318,288 Z" fill="#d0d0d0"/>
+
+          <!-- tie -->
+          <path d="M292,300 L308,300 L316,318 L300,332 L284,318 Z" fill="#0a0a0a"/>
+          <path d="M300,332 L318,352 L306,470 L300,486 L294,470 L282,352 Z" fill="#111"/>
+          <path d="M300,332 L318,352 L312,410 L300,420 Z" fill="#1d1d1d"/>
+
+          <!-- lapels -->
+          <path d="M232,286 L300,392 L268,470 L214,360 Z" fill="url(#lapel)"/>
+          <path d="M368,286 L300,392 L332,470 L386,360 Z" fill="url(#lapel)"/>
+          <path d="M232,286 L300,392 L296,398 L226,296 Z" fill="#3d3d3d" opacity=".6"/>
+          <path d="M368,286 L300,392 L304,398 L374,296 Z" fill="#000" opacity=".6"/>
+
+          <!-- jacket closure -->
+          <path d="M268,470 L300,392 L332,470 L322,640 L278,640 Z" fill="#151515"/>
+          <path d="M300,392 L302,640 L298,640 Z" fill="#000" opacity=".7"/>
+
+          <!-- ===== crossed hands at the waist (bouncer pose) ===== -->
+          <!-- sleeves -->
+          <path d="M110,505 C150,540 210,566 268,572 L280,600
+                   C205,600 140,572 108,545 Z" fill="#161616"/>
+          <path d="M490,505 C450,540 390,566 332,572 L320,600
+                   C395,600 460,572 492,545 Z" fill="#101010"/>
+          <!-- cuffs -->
+          <path d="M262,568 L286,566 L288,584 L266,588 Z" fill="#e2e2e2"/>
+          <path d="M338,568 L314,566 L312,584 L334,588 Z" fill="#c4c4c4"/>
+          <!-- hands, one over the other -->
+          <ellipse cx="322" cy="592" rx="40" ry="22" fill="url(#skinHand)"/>
+          <ellipse cx="286" cy="600" rx="42" ry="23" fill="url(#skinHand)"/>
+          <path d="M258,596 q10,-8 24,-6 M264,606 q12,-7 26,-5 M272,614 q11,-6 24,-4"
+                stroke="#6a6a6a" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+          <path d="M300,586 q12,-7 26,-5 M308,596 q11,-6 24,-4"
+                stroke="#5e5e5e" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+
+          <!-- pocket square -->
+          <path d="M196,392 L224,388 L220,410 L200,412 Z" fill="#dcdcdc"/>
+        </g>
+
+        <!-- ===== HEAD (driven by JS: rotates & shifts with the cursor) ===== -->
+        <g id="headGroup">
+          <!-- neck -->
+          <path d="M266,232 L334,232 L338,292 L300,324 L262,292 Z" fill="url(#skin)"/>
+          <path d="M266,232 L334,232 L332,258 C322,268 278,268 268,258 Z"
+                fill="#5c5c5c" opacity=".55"/>
+          <image href="jason-statham-removebg-preview(2).png"
+                 x="0" y="15" width="600" height="337" preserveAspectRatio="xMidYMin meet"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="vignette"></div>
+    <div class="grain"></div>
+  </div>
+
+  <!-- ================= PASSWORD CONSOLE ================= -->
+  <div class="console" id="console">
+    <div class="label">Access Code</div>
+
+    <div class="timer" id="timer" role="group" aria-label="Password entry">
+      <span class="colon">*</span>
+      <div class="cells" id="cells"></div>
+      <span class="colon">*</span>
+    </div>
+
+    <input id="pass" type="password" inputmode="text" autocomplete="off"
+           maxlength="4" aria-label="Access code">
+
+    <div class="hint" id="hint">Type the code &middot; press Enter</div>
+  </div>
+
+  <div class="blackout" id="blackout"></div>
+
+<script>
+/* =====================================================================
+   1. HEAD TRACKING — the guard calmly follows the cursor
+   ===================================================================== */
+(function headTracking(){
+  const head    = document.getElementById('headGroup');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const PIVOT_X = 300, PIVOT_Y = 300;     // rotate around the base of the neck
+  const MAX_ROT = 9;                      // degrees left/right
+  const MAX_SHIFT = 8;                    // px lateral drift of the head
+  const MAX_TILT = 2.5;                   // subtle vertical nod
+   const EASE = 0.045;                     // lerp factor -> slow, cinematic
+
+   let targetX = 0, targetY = 0;           // -1 .. 1
+   let curRot = 0, curShift = 0, curTilt = 0;
+
+  window.addEventListener('mousemove', e => {
+    targetX = (e.clientX / window.innerWidth)  * 2 - 1;
+    targetY = (e.clientY / window.innerHeight) * 2 - 1;
+  });
+  // touch support
+  window.addEventListener('touchmove', e => {
+    const t = e.touches[0];
+    if (!t) return;
+    targetX = (t.clientX / window.innerWidth)  * 2 - 1;
+    targetY = (t.clientY / window.innerHeight) * 2 - 1;
+  }, {passive:true});
+
+  function frame(){
+    const ease = reduced ? 1 : EASE;
+    curRot   += (targetX * MAX_ROT   - curRot)   * ease;
+    curShift += (targetX * MAX_SHIFT - curShift) * ease;
+    curTilt  += (targetY * MAX_TILT  - curTilt)  * ease;
+     head.setAttribute('transform',
+      `translate(${curShift.toFixed(2)},0) ` +
+      `rotate(${(curRot + curTilt * 0).toFixed(2)} ${PIVOT_X} ${PIVOT_Y}) ` +
+      `rotate(${curTilt.toFixed(2)} ${PIVOT_X} 150)`);
+
+     requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+
+/* =====================================================================
+   2. PASSWORD GATE
+   ---------------------------------------------------------------------
+   The password is never stored in plain text. Input is hashed with
+   SHA-256 and compared against PASS_HASH ("backend-style" check).
+
+   Default password:  8888
+   To change it: open DevTools console on this page and run
+       await hash("yourNewPassword")
+   then paste the result into PASS_HASH below.
+   ===================================================================== */
+const PASS_HASH = "2926a2731f4b312c08982cacf8061eb14bf65c1a87cc5d70e864e079c6220731";
+
+async function hash(str){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join('');
+}
+window.hash = hash; // exposed for generating a new PASS_HASH in DevTools
+
+(function passwordConsole(){
+  const input   = document.getElementById('pass');
+  const cells   = document.getElementById('cells');
+  const timer   = document.getElementById('timer');
+  const hint    = document.getElementById('hint');
+  const LENGTH  = 4;                              // fixed: 4 cells, 4 chars max
+
+  // click anywhere on the timer (or page) focuses the hidden input
+  document.addEventListener('click', () => input.focus());
+  window.addEventListener('load',  () => input.focus());
+
+  function render(text){
+    // always 4 cells; extra characters are ignored (input is capped anyway)
+    cells.innerHTML = '';
+    for (let i = 0; i < LENGTH; i++){
+      const c = document.createElement('div');
+      c.className = 'cell';
+      const s = document.createElement('span');
+      s.textContent = i < text.length ? '\u2217' : ''; // asterisk per typed char
+      c.appendChild(s);
+      cells.appendChild(c);
+    }
+  }
+  render('');
+
+  input.addEventListener('input', () => {
+    // hard cap in JS too (paste, IME, mobile keyboards can bypass maxlength)
+    if (input.value.length > LENGTH) input.value = input.value.slice(0, LENGTH);
+    render(input.value);
+  });
+
+  input.addEventListener('keydown', async e => {
+    if (e.key !== 'Enter') return;
+    const value = input.value;
+    if (!value) return;
+
+    if (await hash(value) === PASS_HASH){
+      grantAccess();
+    } else {
+      denyAccess();
+    }
+  });
+
+  function denyAccess(){
+    timer.classList.remove('error');
+    void timer.offsetWidth;              // restart CSS animation
+    timer.classList.add('error');
+    hint.textContent = 'Access denied';
+    input.value = '';
+    render('ERR');                       // brief ERR flash on the display
+    setTimeout(() => { render(''); hint.textContent = 'Type the code \u00B7 press Enter'; }, 900);
+  }
+
+  function grantAccess(){
+    input.blur();
+    input.disabled = true;
+    hint.textContent = 'Access granted';
+    document.body.classList.add('granted');
+
+    /* ============================================================
+       TODO — TUNNEL TRANSITION (tunnel.md)
+       The real tunnel animation from the next prompt goes here.
+       For now: cinematic zoom + fade to black, then the hook fires.
+       ============================================================ */
+    setTimeout(startTunnelTransition, 1300);
+  }
+})();
+
+/* Placeholder hook — will be replaced by the tunnel.md implementation.
+   Page 2 navigation also belongs here (e.g. location.href = 'page2.html'). */
+function startTunnelTransition(){
+  console.log('[gate] access granted \u2014 waiting for tunnel.md implementation');
+  // location.href = 'page2.html';
+}
+</script>
+</body>
+</html>

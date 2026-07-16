@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#050505">
+  <title>Олег | Вход</title>
+  <style>
+    :root { --black:#050505; --led:#f4f4f4; --paper:#e8dfd2; }
+    * { box-sizing:border-box; }
+    html, body { width:100%; min-height:100%; margin:0; overflow:hidden; }
+    body { background:var(--black); font-family:"Helvetica Neue", Helvetica, sans-serif; }
+    .screen { position:fixed; inset:0; overflow:hidden; }
+    #entry { z-index:3; background:#050505; color:#ddd; filter:grayscale(1); }
+    .spotlight, .vignette, .grain { position:absolute; inset:0; pointer-events:none; }
+    .spotlight { background:radial-gradient(ellipse 55% 70% at 50% 62%,rgba(255,255,255,.12),rgba(255,255,255,.03) 42%,transparent 72%); }
+    .vignette { background:radial-gradient(ellipse 120% 110% at 50% 45%,transparent 55%,rgba(0,0,0,.88) 100%); z-index:4; }
+    .grain { opacity:.08; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E"); animation:grain .8s steps(3) infinite; z-index:5; }
+    @keyframes grain { 50% { transform:translate(20px,-18px); } }
+    .guard { position:absolute; width:min(560px,92vw); left:50%; bottom:-2px; transform:translateX(-50%); z-index:2; }
+    #guard { width:100%; display:block; }
+    #headGroup { will-change:transform; }
+    .console { position:absolute; z-index:6; left:50%; top:78%; transform:translate(-50%,-50%); text-align:center; user-select:none; }
+    .timer { display:inline-flex; align-items:center; gap:14px; padding:16px 26px; border:1px solid #2a2a2a; border-radius:6px; background:linear-gradient(#101010,#060606); box-shadow:inset 0 2px 10px #000,0 0 0 4px #0b0b0b,0 18px 50px #000; cursor:text; }
+    .cells { display:flex; justify-content:center; gap:12px; min-width:150px; }
+    .cell { position:relative; display:grid; place-items:center; width:22px; height:34px; font-family:"Courier New", monospace; font-size:30px; font-weight:bold; color:var(--led); text-shadow:0 0 8px #fff; }
+    .cell::before { content:"8"; position:absolute; color:rgba(255,255,255,.06); text-shadow:none; }
+    .cell span { position:relative; }.colon { font:700 26px "Courier New"; color:white; animation:blink 1s steps(1) infinite; }
+    @keyframes blink { 50% { opacity:.15; } } @keyframes shake { 25% { transform:translateX(-8px); } 75% { transform:translateX(8px); } }
+    .timer.error { animation:shake .4s ease; border-color:#777; }
+    #pass { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
+    #birthday { z-index:1; display:none; background:var(--paper); }.birthday-stage { position:relative; display:grid; width:100%; aspect-ratio:1419 / 1108; overflow:hidden; background:var(--paper); }
+    .birthday-stage::before { content:""; position:absolute; inset:-4%; background:url("../preview.jpg") center/cover; filter:blur(28px) saturate(.8); opacity:.25; }
+    .birthday-scene { position:absolute; inset:0; width:100%; height:100%; overflow:hidden; isolation:isolate; background:var(--paper) url("../preview.jpg") center/100% 100% no-repeat; }
+    .oleg { position:absolute; z-index:2; left:51%; top:39%; width:35%; height:auto; filter:drop-shadow(0 12px 10px rgba(41,31,24,.18)); animation:arrive 1.1s cubic-bezier(.16,1,.3,1) both; }
+    @keyframes arrive { from { opacity:0; transform:translateY(12%); } to { opacity:1; transform:none; } }
+    html.unlocked, body.unlocked { overflow-y:auto; background:var(--paper); }
+    body.unlocked #birthday { position:relative; inset:auto; display:block; overflow:visible; min-height:0; }
+    .wealth-stage { position:relative; display:grid; width:100%; aspect-ratio:1419 / 1108; overflow:hidden; background:var(--paper); }
+    .wealth-scene { position:absolute; inset:0; width:100%; height:100%; overflow:hidden; background:var(--paper) url("третий слайд/3%20slide.png") center/100% 100% no-repeat; }
+    .video-player { position:absolute; z-index:2; left:33.15%; top:35.3%; width:36.35%; aspect-ratio:520 / 330; overflow:hidden; border-radius:2.2%; background:transparent; }
+    .video-player video { width:100%; height:100%; object-fit:cover; opacity:0; transition:opacity .35s ease; }
+    .video-player.playing video { opacity:1; }
+    .play-video { position:absolute; inset:0; display:grid; place-items:center; border:0; background:transparent; cursor:pointer; }
+    .video-player.playing .play-video { opacity:0; pointer-events:none; }
+    @media (max-width:760px) {
+      .birthday-stage, .wealth-stage { min-height:100dvh; aspect-ratio:auto; }
+      .birthday-scene, .wealth-scene { inset:auto; left:50%; top:50%; width:max(100%,calc(100dvh * 1419 / 1108)); height:100%; transform:translate(-50%,-50%); }
+      .console { top:76%; }.timer { padding:13px 18px; }
+    }
+    @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none!important; transition:none!important; } }
+  </style>
+</head>
+<body>
+  <section id="entry" class="screen" aria-label="Первый слайд: доступ">
+    <div class="spotlight"></div>
+    <div class="guard" aria-hidden="true">
+      <svg id="guard" viewBox="0 0 600 640" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="suit" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#292929"/><stop offset="1" stop-color="#080808"/></linearGradient>
+          <linearGradient id="shirt" x1="0" x2="0" y2="1"><stop stop-color="#eee"/><stop offset="1" stop-color="#999"/></linearGradient>
+          <radialGradient id="skin"><stop stop-color="#ddd"/><stop offset="1" stop-color="#737373"/></radialGradient>
+        </defs>
+        <g id="torso">
+          <path d="M110 640V470C110 360 170 300 232 286H368C430 300 490 360 490 470V640Z" fill="url(#suit)"/>
+          <path d="M245 292 300 382 355 292 340 288H260Z" fill="url(#shirt)"/><path d="m258 288 42 48-18-48zm84 0-42 48 18-48z" fill="#eee"/>
+          <path d="m292 300 16 0 8 18-16 14-16-14zM300 332l18 20-12 118-6 16-6-16-12-118z" fill="#0d0d0d"/>
+          <path d="m232 286 68 106-32 78-54-110zm136 0-68 106 32 78 54-110z" fill="#151515"/>
+          <path d="M110 505c55 42 110 58 158 67l12 28c-75 0-140-28-172-55zm380 0c-55 42-110 58-158 67l-12 28c75 0 140-28 172-55z" fill="#111"/>
+          <ellipse cx="322" cy="592" rx="40" ry="22" fill="url(#skin)"/><ellipse cx="286" cy="600" rx="42" ry="23" fill="url(#skin)"/>
+        </g>
+        <g id="headGroup"><path d="M266 232h68l4 60-38 32-38-32z" fill="url(#skin)"/><image href="пёрый слайд/jason-statham-removebg-preview(2).png" x="0" y="15" width="600" height="337" preserveAspectRatio="xMidYMin meet"/></g>
+      </svg>
+    </div>
+    <div class="console"><div class="timer" id="timer"><span class="colon">*</span><div class="cells" id="cells"></div><span class="colon">*</span></div><input id="pass" type="password" inputmode="text" maxlength="4" autocomplete="off" aria-label="Код доступа"></div>
+    <div class="vignette"></div><div class="grain"></div>
+  </section>
+  <section id="birthday" class="screen" aria-label="Поздравление для Олега">
+    <main class="birthday-stage"><section class="birthday-scene"><img class="oleg" src="../step%20%20copy.png" alt="Олег рядом с Lamborghini"></section></main>
+    <section class="wealth-stage" aria-label="Третий слайд">
+      <div class="wealth-scene">
+        <div class="video-player" id="videoPlayer">
+          <video id="wealthVideo" preload="metadata" playsinline><source src="третий%20слайд/7ac5e7a4ac5f4282b0bc9770807c77af.mp4" type="video/mp4"></video>
+          <button class="play-video" id="playVideo" type="button" aria-label="Воспроизвести видео"></button>
+        </div>
+      </div>
+    </section>
+  </section>
+  <script>
+    const head = document.getElementById('headGroup'); let tx=0,ty=0,rot=0,shift=0,tilt=0;
+    addEventListener('pointermove', e => { tx=e.clientX/innerWidth*2-1; ty=e.clientY/innerHeight*2-1; });
+    (function moveHead(){ rot+=(tx*9-rot)*.045; shift+=(tx*8-shift)*.045; tilt+=(ty*2.5-tilt)*.045; head.setAttribute('transform',`translate(${shift.toFixed(2)} 0) rotate(${rot.toFixed(2)} 300 300) rotate(${tilt.toFixed(2)} 300 150)`); requestAnimationFrame(moveHead); })();
+    const input=document.getElementById('pass'), cells=document.getElementById('cells'), timer=document.getElementById('timer');
+    function render(value=''){ cells.innerHTML=''; for(let i=0;i<4;i++){ const cell=document.createElement('div'); cell.className='cell'; cell.innerHTML=`<span>${i<value.length?'*':''}</span>`; cells.append(cell); } }
+    render(); document.addEventListener('click',()=>input.focus()); addEventListener('load',()=>input.focus()); input.addEventListener('input',()=>render(input.value));
+    input.addEventListener('keydown', e => { if(e.key!=='Enter') return; if(input.value==='boss') showBirthday(); else { timer.classList.remove('error'); void timer.offsetWidth; timer.classList.add('error'); input.value=''; render(); } });
+    const videoPlayer=document.getElementById('videoPlayer'), wealthVideo=document.getElementById('wealthVideo'), playVideo=document.getElementById('playVideo');
+    playVideo.addEventListener('click', async () => { try { await wealthVideo.play(); videoPlayer.classList.add('playing'); } catch { playVideo.focus(); } });
+    wealthVideo.addEventListener('ended', () => { videoPlayer.classList.remove('playing'); wealthVideo.currentTime=0; });
+    function showBirthday(){ input.blur(); input.disabled=true; document.getElementById('entry').style.display='none'; document.documentElement.classList.add('unlocked'); document.body.classList.add('unlocked'); document.getElementById('birthday').style.display='block'; window.scrollTo(0,0); }
+  </script>
+</body>
+</html>

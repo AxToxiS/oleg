@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#e8dfd2">
+  <title>Олег, с днём рождения!</title>
+  <style>
+    :root { --paper: #e8dfd2; --scene-ratio: 1419 / 1108; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--paper); }
+    body { min-height: 100dvh; overflow: hidden; }
+
+    .stage {
+      position: relative;
+      display: grid;
+      width: 100vw;
+      min-height: 100dvh;
+      place-items: center;
+      overflow: hidden;
+      background: var(--paper);
+    }
+    .stage::before {
+      position: absolute;
+      inset: -4%;
+      background: url("../preview.jpg") center / cover no-repeat;
+      filter: blur(30px) saturate(.8);
+      opacity: .28;
+      content: "";
+    }
+    .scene {
+      position: relative;
+      width: min(100vw, calc(100dvh * 1419 / 1108));
+      height: min(100dvh, calc(100vw * 1108 / 1419));
+      aspect-ratio: var(--scene-ratio);
+      overflow: hidden;
+      isolation: isolate;
+      background: var(--paper) url("../preview.jpg") center / 100% 100% no-repeat;
+      box-shadow: 0 22px 70px rgba(38, 30, 23, .18);
+    }
+    .oleg {
+      position: absolute;
+      z-index: 2;
+      left: 51%;
+      top: 39%;
+      width: 35%;
+      height: auto;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-drag: none;
+      filter: drop-shadow(0 12px 10px rgba(41, 31, 24, .18));
+    }
+    @media (max-width: 760px) {
+      .scene { width: 100vw; height: auto; box-shadow: none; }
+      .stage { padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
+    }
+  </style>
+</head>
+<body>
+  <main class="stage">
+    <section class="scene" aria-label="Олег, с днём рождения">
+      <img class="oleg" src="../step%20%20copy.png" alt="Олег рядом с Lamborghini">
+    </section>
+  </main>
+</body>
+</html>
