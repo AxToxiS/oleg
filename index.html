@@ -44,16 +44,7 @@
     .treasure-chest.is-open .clock-reward { opacity:1; transform:translate(-50%,-105%) scale(.58) rotate(5deg); }
     @keyframes case-twitch { 0%,100% { transform:rotate(-1deg) translateY(0); } 25% { transform:rotate(1deg) translateY(-8px); } 48% { transform:rotate(-2deg) translateY(1px); } 68% { transform:rotate(1deg) translateY(-3px); } }
     .scene-layer { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
-    .speaker-toggle { position:absolute; z-index:6; left:24%; top:70%; width:11%; height:24%; padding:0; border:0; background:transparent; cursor:pointer; }
-    .speaker-toggle:focus-visible { outline:3px solid rgba(53,38,24,.7); outline-offset:6px; border-radius:8px; }
-    .speaker-art { z-index:5; transform-origin:28% 84%; filter:drop-shadow(0 8px 6px rgba(35,27,21,.3)); animation:speaker-invite 2.6s cubic-bezier(.36,.07,.19,.97) infinite; will-change:transform; }
-    .speaker-toggle:hover + .speaker-art { filter:drop-shadow(0 10px 8px rgba(35,27,21,.36)); }
-    .birthday-scene.is-music-playing .speaker-art { animation:speaker-rock .82s ease-in-out infinite; }
-    @keyframes speaker-invite { 0%,64%,100% { transform:translateY(0) rotate(0); } 77% { transform:translateY(-7px) rotate(-1.5deg); } 88% { transform:translateY(0) rotate(1deg); } }
-    @keyframes speaker-rock { 0%,100% { transform:rotate(-3deg) translateY(0); } 50% { transform:rotate(3deg) translateY(-1.5%); } }
     .car-lights { z-index:1; opacity:0; filter:drop-shadow(0 0 10px rgba(255,255,190,.92)); }
-    .birthday-scene.is-music-playing .car-lights { animation:headlights-flash .68s steps(1,end) infinite; }
-    @keyframes headlights-flash { 0%,45% { opacity:.96; } 46%,100% { opacity:.12; } }
     @keyframes arrive { from { opacity:0; transform:translateY(12%); } to { opacity:1; transform:none; } }
     html.unlocked, body.unlocked { overflow-y:auto; background:var(--paper); }
     body.unlocked #birthday { position:relative; inset:auto; display:block; overflow:visible; min-height:0; }
@@ -69,7 +60,6 @@
       .birthday-scene { inset:auto; left:50%; top:50%; width:max(100%,calc(100dvh * 1419 / 1000)); height:100%; transform:translate(-50%,-50%); }
       .wealth-scene { inset:auto; left:50%; top:50%; width:max(100%,calc(100dvh * 1419 / 1108)); height:100%; transform:translate(-50%,-50%); }
       .treasure-chest { left:34%; top:29%; width:27%; }
-      .speaker-toggle { left:24%; top:70%; width:11%; height:24%; }
       .console { top:76%; }.timer { padding:13px 18px; }
     }
     @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none!important; transition:none!important; } }
@@ -100,7 +90,7 @@
     <div class="vignette"></div><div class="grain"></div>
   </section>
   <section id="birthday" class="screen" aria-label="Поздравление для Олега">
-    <main class="birthday-stage"><section class="birthday-scene" id="birthdayScene"><img class="scene-layer car-lights" src="assets/birthday-lights.png" alt="" aria-hidden="true"><button class="speaker-toggle" id="speakerToggle" type="button" aria-label="Включить музыку" aria-pressed="false"></button><img class="scene-layer speaker-art" src="assets/birthday-speaker.png" alt="" aria-hidden="true"><audio id="gopnikTrack" preload="metadata" src="assets/full-throttle.mp3"></audio><button class="treasure-chest" id="treasureChest" type="button" aria-label="Открыть кейс" aria-expanded="false">
+    <main class="birthday-stage"><section class="birthday-scene" id="birthdayScene"><img class="scene-layer car-lights" src="assets/birthday-lights.png" alt="" aria-hidden="true"><img class="scene-layer speaker-art" src="assets/birthday-speaker.png" alt="" aria-hidden="true"><button class="treasure-chest" id="treasureChest" type="button" aria-label="Открыть кейс" aria-expanded="false">
         <img class="case-image case-close" src="case/case%20close.png" alt="Закрытый кейс">
         <img class="case-image case-open" src="case/case%20open.png" alt="Открытый кейс">
         <img class="clock-reward" src="case/new%20clock.png" alt="Часы внутри кейса">
@@ -146,12 +136,6 @@
     }
     treasureChest.addEventListener('dblclick', openChest);
     treasureChest.addEventListener('keydown', e => { if(e.key==='Enter' || e.key===' '){ e.preventDefault(); openChest(); } });
-    const birthdayScene=document.getElementById('birthdayScene'), speakerToggle=document.getElementById('speakerToggle'), gopnikTrack=document.getElementById('gopnikTrack');
-    function setSpeakerPlaying(playing){ birthdayScene.classList.toggle('is-music-playing',playing); speakerToggle.classList.toggle('is-playing',playing); speakerToggle.setAttribute('aria-pressed',String(playing)); speakerToggle.setAttribute('aria-label',playing?'Поставить музыку на паузу':'Включить музыку'); }
-    speakerToggle.addEventListener('click', async () => { if(!gopnikTrack.paused){ gopnikTrack.pause(); return; } try { await gopnikTrack.play(); } catch { speakerToggle.focus(); } });
-    gopnikTrack.addEventListener('play',()=>setSpeakerPlaying(true));
-    gopnikTrack.addEventListener('pause',()=>{ if(!gopnikTrack.ended) setSpeakerPlaying(false); });
-    gopnikTrack.addEventListener('ended',()=>{ gopnikTrack.currentTime=0; setSpeakerPlaying(false); });
     const videoPlayer=document.getElementById('videoPlayer'), wealthVideo=document.getElementById('wealthVideo'), playVideo=document.getElementById('playVideo');
     playVideo.addEventListener('click', async () => { try { await wealthVideo.play(); videoPlayer.classList.add('playing'); } catch { playVideo.focus(); } });
     wealthVideo.addEventListener('ended', () => { videoPlayer.classList.remove('playing'); wealthVideo.currentTime=0; });
